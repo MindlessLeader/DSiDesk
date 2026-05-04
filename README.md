@@ -6,12 +6,6 @@ An app that allows you to view your Linux desktop on a Nintendo DSi.
 
 DSiDesk is a two-part application consisting of a server component that captures your Linux desktop and a client component that runs on your Nintendo DSi. It enables remote desktop viewing on your Nintendo DSi console, letting you access and interact with your Linux desktop from your portable handheld device.
 
-## Features
-
-- View your Linux desktop on Nintendo DSi at 768x576 resolution
-- Remote desktop streaming
-- Cross-platform Linux support
-
 ## Requirements
 
 - Nintendo DSi console
@@ -26,20 +20,7 @@ DSiDesk is a two-part application consisting of a server component that captures
 
 DSiDesk captures your desktop at a fixed resolution of **768x576**. To capture your entire screen, you'll need to set your Linux desktop to this resolution.
 
-You can do this using `xrandr`:
-
-```bash
-# View available resolutions
-xrandr
-
-# Set resolution to 768x576 (replace HDMI-1 with your display output)
-xrandr --output HDMI-1 --mode 768x576
-
-# Revert to previous resolution
-xrandr --auto
-```
-
-Replace `HDMI-1` with your actual display output (common outputs include `HDMI-1`, `DP-1`, `eDP-1`, etc.).
+You can do this using `xrandr`
 
 ## Installation
 
@@ -89,14 +70,16 @@ cd DSiDesk
 
 ## Usage
 
-1. Start the server on your Linux system:
+1. Transfer the compiled client to your Nintendo DSi
+
+2. Make a file with the name "server-address.txt" with your pc's local ip and transfer it to the root of your DSi's SD card
+
+3. Start the server on your Linux system:
 ```bash
 ./dsi-desk-server
 ```
 
-2. Transfer the compiled client to your Nintendo DSi
-
-3. Run the client on your DSi to view your desktop
+4. Run the client on your DSi to view your desktop
 
 ## Project Structure
 
