@@ -15,6 +15,7 @@ DSiDesk is a two-part application consisting of a server component that captures
   - `libx11-dev`
   - `libxfixes-dev`
   - `libxtst-dev`
+- **devkitpro** (for building the DSi client)
 
 ### Screen Resolution
 
@@ -47,7 +48,9 @@ gcc -fdiagnostics-color=always -g *.c -o dsi-desk-server -lX11 -lXfixes -lXtst
 
 ### 2. Building the Client
 
-The client is built for the Nintendo DSi using Make. Navigate to the `dsi-desk-client` folder:
+The client is built for the Nintendo DSi using devkitpro. First, install devkitpro following the [official installation guide](https://devkitpro.org/wiki/Getting_Started).
+
+Once devkitpro is installed, navigate to the `dsi-desk-client` folder and build:
 
 ```bash
 cd dsi-desk-client
