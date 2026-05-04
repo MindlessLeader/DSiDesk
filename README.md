@@ -101,7 +101,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues, questions, or feature requests, please open an issue on the GitHub repository.
-
----
-
-Made with ❤️ for Nintendo DSi enthusiasts
