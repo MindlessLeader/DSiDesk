@@ -32,7 +32,11 @@ void displayTile(const Tile *tile, uint16_t *display)
 void waitUntilKeyA()
 {
 	while (!(keysHeld() & KEY_A))
+	{
+		scanKeys();
 		usleep(33333);
+	}
+		
 }
 
 void initWifi()
@@ -132,6 +136,20 @@ void getAddress(char *address)
 	address[bytesAdded + 1] = '\0';
 }
 
+void swapScreens(bool* mainOnTop)
+{
+	if(*mainOnTop)
+	{
+		lcdMainOnBottom();
+		*mainOnTop = false;
+	}
+	else
+	{
+		lcdMainOnTop();
+		*mainOnTop = true;
+	}
+}
+
 int main(void)
 {
 	consoleDemoInit();
@@ -153,6 +171,7 @@ int main(void)
 	u16 *fb = bgGetGfxPtr(bg);
 
 	Tile tile;
+	bool mainOnTop = true;
 	while (1)
 	{
 		// swiWaitForVBlank();
@@ -166,6 +185,8 @@ int main(void)
 
 		if (keysDown() & KEY_START)
 			break;
+		if(keysDown() & KEY_X)
+			swapScreens(&mainOnTop);
 	}
 
 	closesocket(tcpSocket);
