@@ -91,11 +91,7 @@ void setTilesData(Tile *tiles, uint16_t *data)
         for (int x = 0; x < DS_SCREEN_WIDTH; x++)
         {
             int dataIndex = ((y % TILE_SIZE) * TILE_SIZE) + (x % TILE_SIZE);
-            if (dataIndex >= sizeof(tiles->data))
-                printf("Oh no, the tile data! %i\n", dataIndex);
             int tilesIndex = ((y / TILE_SIZE) * 16) + (x / TILE_SIZE);
-            if (tilesIndex >= 192)
-                printf("Oh no, the tiles! %i\n", tilesIndex);
             tiles[tilesIndex].data[((y % TILE_SIZE) * TILE_SIZE) + (x % TILE_SIZE)] = data[(y * DS_SCREEN_WIDTH) + x];
         }
 }
