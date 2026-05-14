@@ -164,7 +164,7 @@ int main(void)
 	getAddress(address);
 
 	iprintf("Initializing tcp...\n");
-	int tcpSocket = getTcpClient(address, 8080);
+	int tcpSocket = getTcpClient(address, 8081);
 	iprintf("Tcp initialized\n");
 
 	int bg = bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0, 0);

@@ -6,6 +6,8 @@ Mouse* getMouse()
     mouse->display = XOpenDisplay(NULL);
 
     mouse->root = DefaultRootWindow(mouse->display);
+
+    memset(mouse->pressed, sizeof(mouse->pressed), false);
 }
 
 void setMousePos(Mouse* mouse, int x, int y)
@@ -27,14 +29,24 @@ void moveMouse(Mouse* mouse, int dx, int dy)
 
 void pressMouse(Mouse* mouse, u_int32_t button)
 {
+    if(mouse->pressed[button + 1])
+        return;
+
     XTestFakeButtonEvent(mouse->display, button, True, CurrentTime);
     XFlush(mouse->display);
+
+    mouse->pressed[button + 1] = true;
 }
 
 void releaseMouse(Mouse* mouse, u_int32_t button)
 {
+    if(!mouse->pressed[button + 1])
+        return;
+
     XTestFakeButtonEvent(mouse->display, button, False, CurrentTime);
     XFlush(mouse->display);
+
+    mouse->pressed[button + 1] = false;
 }
 
 void closeMouse(Mouse* mouse)

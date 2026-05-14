@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 enum MouseButton
 {
@@ -18,6 +20,7 @@ typedef struct
 {
     Display *display;
     Window root;
+    bool pressed[3];
 }Mouse;
 
 Mouse* getMouse();

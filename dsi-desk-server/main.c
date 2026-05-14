@@ -7,6 +7,7 @@
 #include "screen.h"
 #include "tcp-server.h"
 #include "mouse.h"
+#include "timer.h"
 
 #define SCREEN_WIDTH 768
 #define SCREEN_HEIGHT 576
@@ -161,13 +162,15 @@ int main()
     setTilesId(tiles);
 
     printf("Starting TCP server...\n");
-    TcpServer *tcpServer = getTcpServer(8080);
+    TcpServer *tcpServer = getTcpServer(8081);
     printf("TCP server started\n");
 
     Mouse *mouse = getMouse();
     uint16_t prevTouch[2] = {0, 0};
+    struct timespec startTime;
     while (1)
     {
+        timerStart(&startTime);
         char *screenData = getScreenData(screenStruct);
 
         resizeScreen(screenData, resizedScreen);
@@ -180,7 +183,7 @@ int main()
 
         memcpy(prevTiles, tiles, sizeof(tiles));
 
-        usleep(50000); // ~20 FPS
+        waitForFrame(&startTime);
     }
 
     closeScreen(screenStruct);
