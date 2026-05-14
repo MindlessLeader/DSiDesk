@@ -111,6 +111,10 @@ typedef struct __attribute__((packed))
     uint16_t ty;//touch y
     bool keyA;
     bool keyB;
+    bool keyUp;
+    bool keyDown;
+    bool keyLeft;
+    bool keyRight;
 } Input;
 
 void handleInput(int clientSocket, Mouse *mouse)
@@ -124,7 +128,17 @@ void handleInput(int clientSocket, Mouse *mouse)
         input.ty = 96;
     }
 
+    if(input.keyUp)
+        moveMouse(mouse, 0, -24);
+    if(input.keyDown)
+        moveMouse(mouse, 0, 24);
+    if(input.keyLeft)
+        moveMouse(mouse, -24, 0);
+    if(input.keyRight)
+        moveMouse(mouse, 24, 0);
+
     moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
+
     if(input.keyA)
         pressMouse(mouse, LEFT_CLICK);
     else
