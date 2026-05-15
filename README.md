@@ -6,6 +6,13 @@ An app that allows you to view your Linux desktop on a Nintendo DSi.
 
 DSiDesk is a two-part application consisting of a server component that captures your Linux desktop and a client component that runs on your Nintendo DSi. It enables remote desktop viewing on your Nintendo DSi console, letting you access and interact with your Linux desktop from your portable handheld device.
 
+## Controls
+
+- Touch Screen / D-Pad: Moves the PC mouse cursor.
+- **A Button:** Executes a **Left-Click**.
+- **B Button:** Executes a **Right-Click**.
+- **X Button:** Swaps the active display view between the top and bottom DSi screens.
+
 ## Requirements
 
 - Nintendo DSi console
