@@ -21,12 +21,20 @@ typedef struct __attribute__((packed))
 
 void displayTile(const Tile *tile, uint16_t *display)
 {
-	int tileX = tile->id % 16;
-	int tileY = tile->id / 16;
+	int tileX = tile->id & 15; //tileX % 16
+	int tileY = tile->id >> 4; //tileY / 16
+
+	int screenXBase = tileX << 4; //tileX * 16
+	int screenYBase = tileY << 4; //tileY * 16
 
 	for (int y = 0; y < TILE_SIZE; y++)
+	{
+		int yBase = y << 4; //y * 16
+		int scrYBased = (screenYBase + y) << 8; //I'm sorry, I have no idea how I'm supposed to name this. This is the same as (screenYBase + y) * LCD_WIDTH
+
 		for (int x = 0; x < TILE_SIZE; x++)
-			display[(((tileY * 16) + y) * LCD_WIDTH) + ((tileX * 16) + x)] = tile->data[(y * TILE_SIZE) + x];
+			display[scrYBased + (screenXBase + x)] = tile->data[yBase + x];
+	}
 }
 
 void waitUntilKeyA()
@@ -36,7 +44,6 @@ void waitUntilKeyA()
 		scanKeys();
 		usleep(33333);
 	}
-		
 }
 
 void initWifi()
