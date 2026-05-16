@@ -60,12 +60,7 @@ typedef struct __attribute__((packed))
 {
 	u16 tx;
 	u16 ty;
-	bool keyA;
-	bool keyB;
-	bool keyUp;
-	bool keyDown;
-	bool keyLeft;
-	bool keyRight;
+	u32 keysHeld;
 } Input;
 
 void sendInput(int tcpSocket)
@@ -74,12 +69,7 @@ void sendInput(int tcpSocket)
 	touchRead(&touch);
 
 	Input input;
-	input.keyA = (keysHeld() & KEY_A);
-	input.keyB = (keysHeld() & KEY_B);
-	input.keyUp = (keysHeld() & KEY_UP);
-	input.keyDown = (keysHeld() & KEY_DOWN);
-	input.keyLeft = (keysHeld() & KEY_LEFT);
-	input.keyRight = (keysHeld() & KEY_RIGHT);
+	input.keysHeld = keysHeld();
 
 	input.tx = touch.px;
 	input.ty = touch.py;

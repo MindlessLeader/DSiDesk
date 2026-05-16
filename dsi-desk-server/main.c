@@ -8,6 +8,7 @@
 #include "tcp-server.h"
 #include "mouse.h"
 #include "timer.h"
+#include "nds-buttons.h"
 
 #define SCREEN_WIDTH 768
 #define SCREEN_HEIGHT 576
@@ -109,12 +110,7 @@ typedef struct __attribute__((packed))
 {
     uint16_t tx;//touch x
     uint16_t ty;//touch y
-    bool keyA;
-    bool keyB;
-    bool keyUp;
-    bool keyDown;
-    bool keyLeft;
-    bool keyRight;
+    uint32_t keysHeld;
 } Input;
 
 void handleInput(int clientSocket, Mouse *mouse)
@@ -128,23 +124,23 @@ void handleInput(int clientSocket, Mouse *mouse)
         input.ty = 96;
     }
 
-    if(input.keyUp)
+    if(input.keysHeld & KEY_UP)
         moveMouse(mouse, 0, -24);
-    if(input.keyDown)
+    if(input.keysHeld & KEY_DOWN)
         moveMouse(mouse, 0, 24);
-    if(input.keyLeft)
+    if(input.keysHeld & KEY_LEFT)
         moveMouse(mouse, -24, 0);
-    if(input.keyRight)
+    if(input.keysHeld & KEY_RIGHT)
         moveMouse(mouse, 24, 0);
 
     moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
 
-    if(input.keyA)
+    if(input.keysHeld & KEY_A)
         pressMouse(mouse, LEFT_CLICK);
     else
         releaseMouse(mouse, LEFT_CLICK);
 
-    if(input.keyB)
+    if(input.keysHeld & KEY_B)
         pressMouse(mouse, RIGHT_CLICK);
     else
         releaseMouse(mouse, RIGHT_CLICK);
