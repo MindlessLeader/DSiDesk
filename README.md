@@ -8,10 +8,11 @@ DSiDesk is a two-part application consisting of a server component that captures
 
 ## Controls
 
-- Touch Screen / D-Pad: Moves the PC mouse cursor.
+- **Touch Screen / D-Pad:** Moves the PC mouse cursor.
 - **A Button:** Executes a **Left-Click**.
 - **B Button:** Executes a **Right-Click**.
 - **X Button:** Swaps the active display view between the top and bottom DSi screens.
+- **SELECT Button:** Enables keyboard (non functional yet)
 
 ## Requirements
 
