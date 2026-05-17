@@ -68,18 +68,46 @@ typedef struct __attribute__((packed))
 	u16 tx;
 	u16 ty;
 	u32 keysHeld;
+	int keyboardKeyPressed;
+	int keyboardKeyReleased;
 } Input;
 
-void sendInput(int tcpSocket)
+volatile int keyboardKeyPressed = -1;
+void onKeyboardPressed(int key)
+{
+	keyboardKeyPressed = key;
+}
+
+volatile int keyboardKeyReleased = -1;
+void onKeyboardReleased(int key)
+{
+	keyboardKeyReleased = key;
+}
+
+void sendInput(int tcpSocket, bool keyboardOn)
 {
 	touchPosition touch;
 	touchRead(&touch);
 
 	Input input;
 	input.keysHeld = keysHeld();
+	
+	if(!keyboardOn)
+	{
+		input.tx = touch.px;
+		input.ty = touch.py;
 
-	input.tx = touch.px;
-	input.ty = touch.py;
+		input.keyboardKeyPressed = -1;
+		input.keyboardKeyReleased = -1;
+	}
+	else
+	{
+		input.tx = 0;
+		input.ty = 0;
+
+		input.keyboardKeyPressed = keyboardKeyPressed;
+		input.keyboardKeyReleased = keyboardKeyReleased;
+	}
 
 	send(tcpSocket, &input, sizeof(input), 0);
 }
@@ -155,9 +183,22 @@ void swapScreens(bool* mainOnTop)
 	}
 }
 
+void changeKeyboardState(bool* keyboardUp)
+{
+	if(*keyboardUp)
+		keyboardHide();
+	else
+		keyboardShow();
+
+	*keyboardUp = !*keyboardUp;
+}
+
 int main(void)
 {
 	consoleDemoInit();
+	Keyboard* keyboard = keyboardDemoInit();
+	keyboard->OnKeyPressed = onKeyboardPressed;
+	keyboard->OnKeyReleased = onKeyboardReleased;
 
 	initWifi();
 
@@ -177,21 +218,25 @@ int main(void)
 
 	Tile tile;
 	bool mainOnTop = true;
+	bool keyboardOn = false;
 	while (1)
 	{
 		// swiWaitForVBlank();
 		scanKeys();
+		keyboardUpdate();
 
 		receiveAll(tcpSocket, &tile, sizeof(tile));
 		if (tile.id != 255)
 			displayTile(&tile, fb);
 		else
-			sendInput(tcpSocket);
+			sendInput(tcpSocket, keyboardOn);
 
 		if (keysDown() & KEY_START)
 			break;
 		if(keysDown() & KEY_X)
 			swapScreens(&mainOnTop);
+		if(keysDown() & KEY_SELECT)
+			changeKeyboardState(&keyboardOn);
 	}
 
 	closesocket(tcpSocket);

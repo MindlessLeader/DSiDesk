@@ -111,6 +111,8 @@ typedef struct __attribute__((packed))
     uint16_t tx;//touch x
     uint16_t ty;//touch y
     uint32_t keysHeld;
+    int keyboardKeyPressed;
+    int keyboardKeyReleased;
 } Input;
 
 void handleInput(int clientSocket, Mouse *mouse)
@@ -144,6 +146,11 @@ void handleInput(int clientSocket, Mouse *mouse)
         pressMouse(mouse, RIGHT_CLICK);
     else
         releaseMouse(mouse, RIGHT_CLICK);
+
+    if(input.keyboardKeyPressed != -1)
+        printf("Pressed key: %c\n", input.keyboardKeyPressed);
+    if(input.keyboardKeyReleased != -1)
+        printf("Released key: %c\n", input.keyboardKeyReleased);
 }
 
 void sendEndTile(int clientSocket)
@@ -188,6 +195,7 @@ int main()
         handleInput(tcpServer->clientSocket, mouse);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
+        free(screenData);
 
         waitForFrame(&startTime);
     }
