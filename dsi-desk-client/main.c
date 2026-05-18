@@ -68,8 +68,7 @@ typedef struct __attribute__((packed))
 	u16 tx;
 	u16 ty;
 	u32 keysHeld;
-	int keyboardKeyPressed;
-	int keyboardKeyReleased;
+	char keyboardKeyPressed;
 } Input;
 
 volatile int keyboardKeyPressed = -1;
@@ -78,10 +77,10 @@ void onKeyboardPressed(int key)
 	keyboardKeyPressed = key;
 }
 
-volatile int keyboardKeyReleased = -1;
 void onKeyboardReleased(int key)
 {
-	keyboardKeyReleased = key;
+	if(keyboardKeyPressed == key)
+		keyboardKeyPressed = -1;
 }
 
 void sendInput(int tcpSocket, bool keyboardOn)
@@ -98,7 +97,6 @@ void sendInput(int tcpSocket, bool keyboardOn)
 		input.ty = touch.py;
 
 		input.keyboardKeyPressed = -1;
-		input.keyboardKeyReleased = -1;
 	}
 	else
 	{
@@ -106,7 +104,6 @@ void sendInput(int tcpSocket, bool keyboardOn)
 		input.ty = 0;
 
 		input.keyboardKeyPressed = keyboardKeyPressed;
-		input.keyboardKeyReleased = keyboardKeyReleased;
 	}
 
 	send(tcpSocket, &input, sizeof(input), 0);

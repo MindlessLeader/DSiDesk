@@ -9,6 +9,7 @@
 #include "mouse.h"
 #include "timer.h"
 #include "nds-buttons.h"
+#include "virt-keyboard.h"
 
 #define SCREEN_WIDTH 768
 #define SCREEN_HEIGHT 576
@@ -111,11 +112,10 @@ typedef struct __attribute__((packed))
     uint16_t tx;//touch x
     uint16_t ty;//touch y
     uint32_t keysHeld;
-    int keyboardKeyPressed;
-    int keyboardKeyReleased;
+    char keyboardKeyPressed;
 } Input;
 
-void handleInput(int clientSocket, Mouse *mouse)
+void handleInput(int clientSocket, Mouse *mouse, int fd, char* prevChar)
 {
     Input input;
     recv(clientSocket, &input, sizeof(input), 0);
@@ -146,11 +146,14 @@ void handleInput(int clientSocket, Mouse *mouse)
         pressMouse(mouse, RIGHT_CLICK);
     else
         releaseMouse(mouse, RIGHT_CLICK);
-
+    
+    
     if(input.keyboardKeyPressed != -1)
-        printf("Pressed key: %c\n", input.keyboardKeyPressed);
-    if(input.keyboardKeyReleased != -1)
-        printf("Released key: %c\n", input.keyboardKeyReleased);
+        pressCharacter(fd, input.keyboardKeyPressed);
+    else if(*prevChar != -1)
+        releaseCharacter(fd, *prevChar);
+
+    *prevChar = input.keyboardKeyPressed;
 }
 
 void sendEndTile(int clientSocket)
@@ -162,6 +165,13 @@ void sendEndTile(int clientSocket)
 
 int main()
 {
+    printf("Initializing virtual keyboard...\n");
+    int fd = initVirtualKeyboard("Nintendo DSi Virtual Keyboard");
+    if(fd != -1)
+        printf("Keyboard initialized\n");
+    else
+        printf("Can't initialize virtual keyboard\n");
+
     printf("Initializing screen...\n");
     ScreenStruct *screenStruct = initScreen(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
     printf("Screen initialized\n");
@@ -174,13 +184,15 @@ int main()
 
     setTilesId(tiles);
 
-    printf("Starting TCP server...\n");
-    TcpServer *tcpServer = getTcpServer(8081);
+    const uint16_t port = 8081;
+    printf("Starting TCP server on port %i...\n", port);
+    TcpServer *tcpServer = getTcpServer(port);
     printf("TCP server started\n");
 
     Mouse *mouse = getMouse();
     uint16_t prevTouch[2] = {0, 0};
     struct timespec startTime;
+    char prevChar = -1;
     while (1)
     {
         timerStart(&startTime);
@@ -192,15 +204,16 @@ int main()
 
         sendTiles(tiles, prevTiles, tcpServer);
         sendEndTile(tcpServer->clientSocket);
-        handleInput(tcpServer->clientSocket, mouse);
+        handleInput(tcpServer->clientSocket, mouse, fd, &prevChar);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
+        
         free(screenData);
-
         waitForFrame(&startTime);
     }
 
     closeScreen(screenStruct);
     closeTcpServer(tcpServer);
     closeMouse(mouse);
+    closeVirtualKeyboard(fd);
 }
