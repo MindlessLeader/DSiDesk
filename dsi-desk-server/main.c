@@ -163,6 +163,13 @@ void sendEndTile(int clientSocket)
     send(clientSocket, &tile, sizeof(tile), 0);
 }
 
+void handleConnection(Tile* tiles, Tile* prevTiles, TcpServer* tcpServer, Mouse* mouse, int fd, char* prevChar)
+{
+    sendTiles(tiles, prevTiles, tcpServer);
+    sendEndTile(tcpServer->clientSocket);
+    handleInput(tcpServer->clientSocket, mouse, fd, prevChar);
+}
+
 int main()
 {
     printf("Initializing virtual keyboard...\n");
@@ -202,9 +209,7 @@ int main()
         bgrToBGR555(dsBuffer, resizedScreen);
         setTilesData(tiles, dsBuffer);
 
-        sendTiles(tiles, prevTiles, tcpServer);
-        sendEndTile(tcpServer->clientSocket);
-        handleInput(tcpServer->clientSocket, mouse, fd, &prevChar);
+        handleConnection(tiles, prevTiles, tcpServer, mouse, fd, &prevChar);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
         
