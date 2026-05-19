@@ -29,7 +29,7 @@ typedef struct __attribute__((packed))
     uint16_t data[256];
 } Tile;
 
-//resizes the screen and turns BGRA to BGR
+// resizes the screen and turns BGRA to BGR
 void resizeScreen(char *screenData, char *resizedScreen)
 {
     int scaleX = SCREEN_WIDTH / DS_SCREEN_WIDTH;
@@ -98,24 +98,15 @@ void setTilesData(Tile *tiles, uint16_t *data)
         }
 }
 
-void sendTiles(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer)
-{
-    for (int i = 0; i < TILE_COUNT; i++)
-    {
-        if (memcmp(tiles[i].data, prevTiles[i].data, sizeof(uint16_t) * 256) != 0)
-            sendAll(tcpServer, &tiles[i], sizeof(Tile));
-    }
-}
-
 typedef struct __attribute__((packed))
 {
-    uint16_t tx;//touch x
-    uint16_t ty;//touch y
+    uint16_t tx; // touch x
+    uint16_t ty; // touch y
     uint32_t keysHeld;
     char keyboardKeyPressed;
 } Input;
 
-void handleInput(int clientSocket, Mouse *mouse, int fd, char* prevChar)
+void handleInput(int clientSocket, Mouse *mouse, int fd, char *prevChar)
 {
     Input input;
     recv(clientSocket, &input, sizeof(input), 0);
@@ -126,31 +117,30 @@ void handleInput(int clientSocket, Mouse *mouse, int fd, char* prevChar)
         input.ty = 96;
     }
 
-    if(input.keysHeld & KEY_UP)
+    if (input.keysHeld & KEY_UP)
         moveMouse(mouse, 0, -24);
-    if(input.keysHeld & KEY_DOWN)
+    if (input.keysHeld & KEY_DOWN)
         moveMouse(mouse, 0, 24);
-    if(input.keysHeld & KEY_LEFT)
+    if (input.keysHeld & KEY_LEFT)
         moveMouse(mouse, -24, 0);
-    if(input.keysHeld & KEY_RIGHT)
+    if (input.keysHeld & KEY_RIGHT)
         moveMouse(mouse, 24, 0);
 
     moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
 
-    if(input.keysHeld & KEY_A)
+    if (input.keysHeld & KEY_A)
         pressMouse(mouse, LEFT_CLICK);
     else
         releaseMouse(mouse, LEFT_CLICK);
 
-    if(input.keysHeld & KEY_B)
+    if (input.keysHeld & KEY_B)
         pressMouse(mouse, RIGHT_CLICK);
     else
         releaseMouse(mouse, RIGHT_CLICK);
-    
-    
-    if(input.keyboardKeyPressed != -1)
+
+    if (input.keyboardKeyPressed != -1)
         pressCharacter(fd, input.keyboardKeyPressed);
-    else if(*prevChar != -1)
+    else if (*prevChar != -1)
         releaseCharacter(fd, *prevChar);
 
     *prevChar = input.keyboardKeyPressed;
@@ -163,18 +153,26 @@ void sendEndTile(int clientSocket)
     send(clientSocket, &tile, sizeof(tile), 0);
 }
 
-void handleConnection(Tile* tiles, Tile* prevTiles, TcpServer* tcpServer, Mouse* mouse, int fd, char* prevChar)
+void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int fd, char *prevChar)
 {
-    sendTiles(tiles, prevTiles, tcpServer);
-    sendEndTile(tcpServer->clientSocket);
-    handleInput(tcpServer->clientSocket, mouse, fd, prevChar);
+    for (int i = 0; i < TILE_COUNT; i++)
+    {
+        if (memcmp(tiles[i].data, prevTiles[i].data, sizeof(uint16_t) * 256) != 0)
+            sendAll(tcpServer, &tiles[i], sizeof(Tile));
+
+        if (i == 0 || i == 95)
+        {
+            sendEndTile(tcpServer->clientSocket);
+            handleInput(tcpServer->clientSocket, mouse, fd, prevChar);
+        }
+    }
 }
 
 int main()
 {
     printf("Initializing virtual keyboard...\n");
     int fd = initVirtualKeyboard("Nintendo DSi Virtual Keyboard");
-    if(fd != -1)
+    if (fd != -1)
         printf("Keyboard initialized\n");
     else
         printf("Can't initialize virtual keyboard\n");
@@ -212,7 +210,7 @@ int main()
         handleConnection(tiles, prevTiles, tcpServer, mouse, fd, &prevChar);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
-        
+
         free(screenData);
         waitForFrame(&startTime);
     }
