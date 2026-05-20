@@ -187,9 +187,9 @@ int main()
     printf("Initializing virtual touchscreen...\n");
     int touchFd = getTouchFd(SCREEN_WIDTH, SCREEN_HEIGHT, "Nintendo DSi Virtual touchscreen");
     if(touchFd != -1)
-        printf("Virtual touchscreen initialized");
+        printf("Virtual touchscreen initialized\n");
     else
-        printf("Can't initialize virtual touchscreen");
+        printf("Can't initialize virtual touchscreen\n");
 
     printf("Initializing screen...\n");
     ScreenStruct *screenStruct = initScreen(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
