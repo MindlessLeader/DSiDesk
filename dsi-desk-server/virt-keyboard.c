@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <linux/uinput.h>
+#include "virt-input.h"
 #include "virt-keyboard.h"
 
 // Struct to store a keycode and whether Shift needs to be held down
@@ -70,17 +66,6 @@ void initialize_ascii_map()
     ascii_map['\n'] = (KeyMap){KEY_ENTER, 0};
     ascii_map['\t'] = (KeyMap){KEY_TAB, 0};
     ascii_map['\b'] = (KeyMap){KEY_BACKSPACE, 0};
-}
-
-// Low-level event emitter
-void emit(int fd, int type, int code, int val)
-{
-    struct input_event ie;
-    memset(&ie, 0, sizeof(ie));
-    ie.type = type;
-    ie.code = code;
-    ie.value = val;
-    write(fd, &ie, sizeof(ie));
 }
 
 KeyMap getSpecialKeyMap(char c)

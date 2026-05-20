@@ -69,6 +69,7 @@ typedef struct __attribute__((packed))
 	u16 ty;
 	u32 keysHeld;
 	char keyboardKeyPressed;
+	bool mainOnTop;
 } Input;
 
 volatile int keyboardKeyPressed = -1;
@@ -83,13 +84,14 @@ void onKeyboardReleased(int key)
 		keyboardKeyPressed = -1;
 }
 
-void sendInput(int tcpSocket, bool keyboardOn)
+void sendInput(int tcpSocket, bool keyboardOn, bool mainOnTop)
 {
 	touchPosition touch;
 	touchRead(&touch);
 
 	Input input;
 	input.keysHeld = keysHeld();
+	input.mainOnTop = mainOnTop;
 	
 	if(!keyboardOn)
 	{
@@ -226,13 +228,13 @@ int main(void)
 		if (tile.id != 255)
 			displayTile(&tile, fb);
 		else
-			sendInput(tcpSocket, keyboardOn);
+			sendInput(tcpSocket, keyboardOn, mainOnTop);
 
 		if (keysDown() & KEY_START)
 			break;
 		if(keysDown() & KEY_X)
 			swapScreens(&mainOnTop);
-		if(keysDown() & KEY_SELECT)
+		if((keysDown() & KEY_SELECT) || (!mainOnTop && keyboardOn))
 			changeKeyboardState(&keyboardOn);
 	}
 

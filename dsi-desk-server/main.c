@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "nds-buttons.h"
 #include "virt-keyboard.h"
+#include "virt-touch.h"
 
 #define SCREEN_WIDTH 768
 #define SCREEN_HEIGHT 576
@@ -104,9 +105,10 @@ typedef struct __attribute__((packed))
     uint16_t ty; // touch y
     uint32_t keysHeld;
     char keyboardKeyPressed;
+    bool mainOnTop;
 } Input;
 
-void handleInput(int clientSocket, Mouse *mouse, int fd, char *prevChar)
+void handleInput(int clientSocket, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd)
 {
     Input input;
     recv(clientSocket, &input, sizeof(input), 0);
@@ -126,7 +128,12 @@ void handleInput(int clientSocket, Mouse *mouse, int fd, char *prevChar)
     if (input.keysHeld & KEY_RIGHT)
         moveMouse(mouse, 24, 0);
 
-    moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
+    if(input.mainOnTop)
+        moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
+    else if(!(input.tx == 128 && input.ty == 96))
+        simTouch(touchFd, input.tx * 3, input.ty * 3);
+    else
+        simTouchRelease(touchFd);
 
     if (input.keysHeld & KEY_A)
         pressMouse(mouse, LEFT_CLICK);
@@ -139,9 +146,9 @@ void handleInput(int clientSocket, Mouse *mouse, int fd, char *prevChar)
         releaseMouse(mouse, RIGHT_CLICK);
 
     if (input.keyboardKeyPressed != -1)
-        pressCharacter(fd, input.keyboardKeyPressed);
+        pressCharacter(keyboardFd, input.keyboardKeyPressed);
     else if (*prevChar != -1)
-        releaseCharacter(fd, *prevChar);
+        releaseCharacter(keyboardFd, *prevChar);
 
     *prevChar = input.keyboardKeyPressed;
 }
@@ -153,7 +160,7 @@ void sendEndTile(int clientSocket)
     send(clientSocket, &tile, sizeof(tile), 0);
 }
 
-void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int fd, char *prevChar)
+void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd)
 {
     for (int i = 0; i < TILE_COUNT; i++)
     {
@@ -163,7 +170,7 @@ void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse 
         if (i == 0 || i == 95)
         {
             sendEndTile(tcpServer->clientSocket);
-            handleInput(tcpServer->clientSocket, mouse, fd, prevChar);
+            handleInput(tcpServer->clientSocket, mouse, keyboardFd, prevChar, touchFd);
         }
     }
 }
@@ -171,11 +178,18 @@ void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse 
 int main()
 {
     printf("Initializing virtual keyboard...\n");
-    int fd = initVirtualKeyboard("Nintendo DSi Virtual Keyboard");
-    if (fd != -1)
+    int keyboardFd = initVirtualKeyboard("Nintendo DSi Virtual Keyboard");
+    if (keyboardFd != -1)
         printf("Keyboard initialized\n");
     else
         printf("Can't initialize virtual keyboard\n");
+
+    printf("Initializing virtual touchscreen...\n");
+    int touchFd = getTouchFd(SCREEN_WIDTH, SCREEN_HEIGHT, "Nintendo DSi Virtual touchscreen");
+    if(touchFd != -1)
+        printf("Virtual touchscreen initialized");
+    else
+        printf("Can't initialize virtual touchscreen");
 
     printf("Initializing screen...\n");
     ScreenStruct *screenStruct = initScreen(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
@@ -207,7 +221,7 @@ int main()
         bgrToBGR555(dsBuffer, resizedScreen);
         setTilesData(tiles, dsBuffer);
 
-        handleConnection(tiles, prevTiles, tcpServer, mouse, fd, &prevChar);
+        handleConnection(tiles, prevTiles, tcpServer, mouse, keyboardFd, &prevChar, touchFd);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
 
@@ -218,5 +232,5 @@ int main()
     closeScreen(screenStruct);
     closeTcpServer(tcpServer);
     closeMouse(mouse);
-    closeVirtualKeyboard(fd);
+    closeVirtualKeyboard(keyboardFd);
 }
