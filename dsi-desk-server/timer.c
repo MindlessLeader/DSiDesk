@@ -2,12 +2,20 @@
 #include "timer.h"
 
 #define TARGET_FPS 60
-#define NS_PER_SEC 1000000000L
 #define FRAME_DELAY_NS (NS_PER_SEC / TARGET_FPS)
 
 void timerStart(struct timespec* startTime)
 {
    clock_gettime(CLOCK_MONOTONIC, startTime); 
+}
+
+long getTimePassed(struct timespec* startTime)
+{
+    struct timespec end_time, sleep_time;
+    
+    clock_gettime(CLOCK_MONOTONIC, &end_time);
+
+    return (end_time.tv_sec - startTime->tv_sec) * NS_PER_SEC + (end_time.tv_nsec - startTime->tv_nsec);
 }
 
 void waitForFrame(struct timespec* startTime)

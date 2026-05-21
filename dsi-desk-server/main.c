@@ -160,17 +160,18 @@ void sendEndTile(int clientSocket)
     send(clientSocket, &tile, sizeof(tile), 0);
 }
 
-void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd)
+void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd, struct timespec* connectionTimer)
 {
     for (int i = 0; i < TILE_COUNT; i++)
     {
         if (memcmp(tiles[i].data, prevTiles[i].data, sizeof(uint16_t) * 256) != 0)
             sendAll(tcpServer, &tiles[i], sizeof(Tile));
 
-        if (i == 0 || i == 95)
+        if (getTimePassed(connectionTimer) > (NS_PER_SEC / 30))
         {
             sendEndTile(tcpServer->clientSocket);
             handleInput(tcpServer->clientSocket, mouse, keyboardFd, prevChar, touchFd);
+            timerStart(connectionTimer);
         }
     }
 }
@@ -212,6 +213,7 @@ int main()
     uint16_t prevTouch[2] = {0, 0};
     struct timespec startTime;
     char prevChar = -1;
+    struct timespec connectionTimer;
     while (1)
     {
         timerStart(&startTime);
@@ -221,7 +223,7 @@ int main()
         bgrToBGR555(dsBuffer, resizedScreen);
         setTilesData(tiles, dsBuffer);
 
-        handleConnection(tiles, prevTiles, tcpServer, mouse, keyboardFd, &prevChar, touchFd);
+        handleConnection(tiles, prevTiles, tcpServer, mouse, keyboardFd, &prevChar, touchFd, &connectionTimer);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
 
