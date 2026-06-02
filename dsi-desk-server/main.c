@@ -6,7 +6,7 @@
 
 #include "screen.h"
 #include "tcp-server.h"
-#include "mouse.h"
+#include "virt-mouse.h"
 #include "timer.h"
 #include "nds-buttons.h"
 #include "virt-keyboard.h"
@@ -108,7 +108,7 @@ typedef struct __attribute__((packed))
     bool mainOnTop;
 } Input;
 
-void handleInput(int clientSocket, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd)
+void handleInput(int clientSocket, int mouseFd, int keyboardFd, char *prevChar, int touchFd)
 {
     Input input;
     recv(clientSocket, &input, sizeof(input), 0);
@@ -120,36 +120,37 @@ void handleInput(int clientSocket, Mouse *mouse, int keyboardFd, char *prevChar,
     }
 
     if (input.keysHeld & KEY_UP)
-        moveMouse(mouse, 0, -24);
+        moveMouse(mouseFd, 0, -24);
     if (input.keysHeld & KEY_DOWN)
-        moveMouse(mouse, 0, 24);
+        moveMouse(mouseFd, 0, 24);
     if (input.keysHeld & KEY_LEFT)
-        moveMouse(mouse, -24, 0);
+        moveMouse(mouseFd, -24, 0);
     if (input.keysHeld & KEY_RIGHT)
-        moveMouse(mouse, 24, 0);
+        moveMouse(mouseFd, 24, 0);
 
     if(input.mainOnTop)
-        moveMouse(mouse, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
+        moveMouse(mouseFd, (input.tx - 128) * 0.4, (input.ty - 96) * 0.4);
     else if(!(input.tx == 128 && input.ty == 96))
         simTouch(touchFd, input.tx * 3, input.ty * 3);
     else
         simTouchRelease(touchFd);
 
     if (input.keysHeld & KEY_A)
-        pressMouse(mouse, LEFT_CLICK);
+        setMouseLeft(mouseFd, 1);
     else
-        releaseMouse(mouse, LEFT_CLICK);
+        setMouseLeft(mouseFd, 0);
 
     if (input.keysHeld & KEY_B)
-        pressMouse(mouse, RIGHT_CLICK);
+        setMouseRight(mouseFd, 1);
     else
-        releaseMouse(mouse, RIGHT_CLICK);
+        setMouseRight(mouseFd, 0);
 
     if (input.keyboardKeyPressed != -1)
         pressCharacter(keyboardFd, input.keyboardKeyPressed);
     else if (*prevChar != -1)
         releaseCharacter(keyboardFd, *prevChar);
 
+    updateMouse(mouseFd);
     *prevChar = input.keyboardKeyPressed;
 }
 
@@ -160,7 +161,7 @@ void sendEndTile(int clientSocket)
     send(clientSocket, &tile, sizeof(tile), 0);
 }
 
-void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse *mouse, int keyboardFd, char *prevChar, int touchFd, struct timespec* connectionTimer)
+void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, int mouseFd, int keyboardFd, char *prevChar, int touchFd, struct timespec* connectionTimer)
 {
     for (int i = 0; i < TILE_COUNT; i++)
     {
@@ -170,7 +171,7 @@ void handleConnection(Tile *tiles, Tile *prevTiles, TcpServer *tcpServer, Mouse 
         if (getTimePassed(connectionTimer) > (NS_PER_SEC / 30))
         {
             sendEndTile(tcpServer->clientSocket);
-            handleInput(tcpServer->clientSocket, mouse, keyboardFd, prevChar, touchFd);
+            handleInput(tcpServer->clientSocket, mouseFd, keyboardFd, prevChar, touchFd);
             timerStart(connectionTimer);
         }
     }
@@ -209,7 +210,7 @@ int main()
     TcpServer *tcpServer = getTcpServer(port);
     printf("TCP server started\n");
 
-    Mouse *mouse = getMouse();
+    int mouseFd = getMouseFd("Nintendo DSi Virtual Mouse");
     uint16_t prevTouch[2] = {0, 0};
     struct timespec startTime;
     char prevChar = -1;
@@ -223,7 +224,7 @@ int main()
         bgrToBGR555(dsBuffer, resizedScreen);
         setTilesData(tiles, dsBuffer);
 
-        handleConnection(tiles, prevTiles, tcpServer, mouse, keyboardFd, &prevChar, touchFd, &connectionTimer);
+        handleConnection(tiles, prevTiles, tcpServer, mouseFd, keyboardFd, &prevChar, touchFd, &connectionTimer);
 
         memcpy(prevTiles, tiles, sizeof(tiles));
 
@@ -233,6 +234,6 @@ int main()
 
     closeScreen(screenStruct);
     closeTcpServer(tcpServer);
-    closeMouse(mouse);
+    closeMouse(mouseFd);
     closeVirtualKeyboard(keyboardFd);
 }
