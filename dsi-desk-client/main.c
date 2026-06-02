@@ -230,8 +230,6 @@ int main(void)
 		else
 			sendInput(tcpSocket, keyboardOn, mainOnTop);
 
-		if (keysDown() & KEY_START)
-			break;
 		if(keysDown() & KEY_X)
 			swapScreens(&mainOnTop);
 		if((keysDown() & KEY_SELECT) || (!mainOnTop && keyboardOn))
