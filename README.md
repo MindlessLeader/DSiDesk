@@ -12,7 +12,9 @@ DSiDesk is a two-part application consisting of a server component that captures
 - **A Button:** Executes a **Left-Click**.
 - **B Button:** Executes a **Right-Click**.
 - **X Button:** Swaps the active display view between the top and bottom DSi screens.
-- **SELECT Button:** Enable or disable keyboard (you need to open the server app with sudo for this to work)
+- **SELECT Button:** Enable or disable keyboard
+
+Warning: Controls won't work without sudo
 
 ## Requirements
 
