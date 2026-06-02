@@ -87,7 +87,7 @@ cd DSiDesk
 
 3. Start the server on your Linux system:
 ```bash
-./dsi-desk-server
+sudo ./dsi-desk-server
 ```
 
 4. Run the client on your DSi to view your desktop
