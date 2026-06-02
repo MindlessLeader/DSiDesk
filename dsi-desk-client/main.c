@@ -218,7 +218,7 @@ int main(void)
 	Tile tile;
 	bool mainOnTop = true;
 	bool keyboardOn = false;
-	while (1)
+	while (pmMainLoop())
 	{
 		// swiWaitForVBlank();
 		scanKeys();
