@@ -94,12 +94,6 @@ sudo ./dsi-desk-server
 
 4. Run the client on your DSi to view your desktop
 
-## Project Structure
-
-- **C source files** (73.8%) - Core application logic for server and client
-- **Makefile** (26.2%) - Build configuration for the DSi client
-- **dsi-desk-client/** - Nintendo DSi client application
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
