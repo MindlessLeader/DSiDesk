@@ -8,24 +8,27 @@ DSiDesk is a two-part application consisting of a server component that captures
 
 ## Controls
 
-- **Touch Screen / D-Pad:** Moves the PC mouse cursor.
-- **A Button:** Executes a **Left-Click**.
-- **B Button:** Executes a **Right-Click**.
-- **X Button:** Swaps the active display view between the top and bottom DSi screens.
-- **SELECT Button:** Enable or disable keyboard
+> [!WARNING]  
+> **Root Privileges Required:** Remote input controls will not function unless the server is executed with `sudo`.
 
-Warning: Controls won't work without sudo
+| Input Device | Action on PC |
+| :--- | :--- |
+| **Touch Screen / D-Pad** | Moves the PC mouse cursor |
+| **A Button** | Left-Click |
+| **B Button** | Right-Click |
+| **X Button** | Swap active view between top and bottom DSi screens |
+| **SELECT Button** | Toggle virtual keyboard On/Off |
 
 ## Requirements
 
-- Nintendo DSi console
-- Linux system with X11 support
-- Build tools (Make, GCC)
-- X11 development libraries:
-  - `libx11-dev`
-  - `libxfixes-dev`
-  - `libxtst-dev`
-- **devkitpro** (for building the DSi client)
+### Hardware & Operating System
+* **Nintendo DSi** console capable of running homebrew.
+* **Linux OS** with an active **X11 display server** session (Wayland is not supported).
+
+### Core Dependencies
+* **Build tools**: `make` and `gcc`
+* **X11 development libraries**: `libx11`, `libxfixes`, and `libxtst`
+* **devkitPro**: Required exclusively for compiling the DSi client binary.
 
 ### Screen Resolution
 
@@ -35,57 +38,51 @@ You can do this using `xrandr`
 
 ## Installation
 
-### 1. Building the Server
+> [!TIP]
+> **Skip the build process:** If you do not want to compile the project yourself, you can download the latest precompiled server and client binaries directly from the [Releases](https://github.com) section of this repository.
 
-The server component requires X11 libraries to be installed on your Linux system. Install the dependencies:
+### 1. Clone the Repository (For Compiling From Source)
+If you prefer to build the project from scratch, begin by downloading the source code to your Linux machine:
 
-```bash
-# Debian/Ubuntu
-sudo apt-get install libx11-dev libxfixes-dev libxtst-dev
-
-# Fedora/RHEL
-sudo dnf install libX11-devel libXfixes-devel libXtst-devel
-
-# Arch
-sudo pacman -S libx11 libxfixes libxtst
-```
-
-Then compile the server:
-
-```bash
-gcc -fdiagnostics-color=always -g *.c -o dsi-desk-server -lX11 -lXfixes -lXtst
-```
-
-### 2. Building the Client
-
-The client is built for the Nintendo DSi using devkitpro. First, install devkitpro following the [official installation guide](https://devkitpro.org/wiki/Getting_Started).
-
-Once devkitpro is installed, navigate to the `dsi-desk-client` folder and build:
-
-```bash
-cd dsi-desk-client
-make
-```
-
-This will compile the DSi client application.
-
-### 3. Setup
-
-1. Clone the repository:
+Begin by downloading the project source code to your Linux machine:
 ```bash
 git clone https://github.com/MindlessLeader/DSiDesk.git
 cd DSiDesk
 ```
 
-2. Set your display to 768x576 resolution (see Screen Resolution section above)
+### 2. Build the Linux Server
+Install the required development headers based on your Linux distribution:
 
-3. Build both components using the instructions above
+```bash
+# Ubuntu / Debian
+sudo apt-get install libx11-dev libxfixes-dev libxtst-dev
+
+# Fedora / RHEL
+sudo dnf install libX11-devel libXfixes-devel libXtst-devel
+
+# Arch Linux
+sudo pacman -S libx11 libxfixes libxtst
+```
+
+Compile the server executable:
+```bash
+gcc -fdiagnostics-color=always -g *.c -o dsi-desk-server -lX11 -lXfixes -lXtst
+```
+
+### 3. Build the DSi Client
+Ensure you have devkitPro configured on your system by following the [official installation guide](https://devkitpro.org/wiki/Getting_Started).
+
+Navigate to the client subdirectory and compile:
+```bash
+cd dsi-desk-client
+make
+```
 
 ## Usage
 
 1. Transfer the compiled client to your Nintendo DSi
 
-2. Make a file with the name "server-address.txt" with your pc's local ip and transfer it to the root of your DSi's SD card
+2. Make a file with the name "server-address.txt" with your pc's local ip and transfer it to the root of your DSi's SD card 
 
 3. Start the server on your Linux system:
 ```bash
